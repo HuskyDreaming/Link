@@ -1,0 +1,18 @@
+database:
+  host: localhost
+  port: 3306
+  name: wildenlink
+  username: wildenlink
+  password: wildenlink
+
+discord:
+  token: "MTQ4MTUwODgwNjc4NDcxMjg4MA.GKcW8J.ZBrAbipe9ASOuVkFjRr32eKssZbuR1KcQkkTTE"
+  role-id: 0
+  guild-id: 0
+
+minecraft:
+  survival:
+    commands:
+      - "eco give %player% 2500"
+      - "gems give %player% 10"
+      - "fly give %player% 5min"
