@@ -28,7 +28,6 @@ public class LinkVelocityPlugin extends LinkCommonPlugin {
 
     private final ProxyServer proxy;
     private final Path dataDirectory;
-    private VelocityInitializer initializer;
 
     @Inject
     public LinkVelocityPlugin(ProxyServer proxy, @DataDirectory Path dataDirectory) {
@@ -38,21 +37,11 @@ public class LinkVelocityPlugin extends LinkCommonPlugin {
 
     @Subscribe
     public void onInit(ProxyInitializeEvent event) {
-        initializer = new VelocityInitializer(proxy, dataDirectory, logger);
-        initializer.initialize(this);
+        new VelocityInitializer(proxy, dataDirectory, logger).initialize(this);
     }
 
     @Subscribe
     public void onShutdown(ProxyShutdownEvent event) {
         shutdown();
     }
-
-    public ProxyServer getProxy() {
-        return proxy;
-    }
-
-    public Logger getLogger() {
-        return logger;
-    }
 }
-

@@ -12,7 +12,9 @@ public class ButtonListener extends ListenerAdapter {
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
         var componentId = event.getComponentId();
-        if (!componentId.equals("link_button")) return;
+        if (!componentId.equals("link_button")) {
+            return;
+        }
 
         var linkInput = TextInput.create("link_code", TextInputStyle.SHORT)
                 .setPlaceholder("Minecraft Link Code")

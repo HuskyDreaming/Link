@@ -1,8 +1,9 @@
 package com.huskydreaming.link.common.initialization;
 
+import com.huskydreaming.link.common.configuration.LinkConfig;
 import com.huskydreaming.link.common.repositories.LinkRepository;
-import com.huskydreaming.link.common.services.implementations.CodeServiceImpl;
-import com.huskydreaming.link.common.services.implementations.LinkServiceImpl;
+import com.huskydreaming.link.common.services.impl.CodeServiceImpl;
+import com.huskydreaming.link.common.services.impl.LinkServiceImpl;
 import com.huskydreaming.link.common.services.interfaces.CodeService;
 import com.huskydreaming.link.common.services.interfaces.LinkService;
 
@@ -29,8 +30,7 @@ public class ServiceInitializer {
     /**
      * Creates a LinkService (handles Minecraft ↔ Discord linking logic).
      */
-    public LinkService initializeLinkService(LinkRepository repository) {
-        return new LinkServiceImpl(repository, executor);
+    public LinkService initializeLinkService(LinkRepository repository, LinkConfig linkConfig) {
+        return new LinkServiceImpl(repository, executor, linkConfig);
     }
 }
-

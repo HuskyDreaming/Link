@@ -2,13 +2,13 @@ package com.huskydreaming.link.common;
 
 import com.huskydreaming.link.common.configuration.DatabaseConfig;
 import com.huskydreaming.link.common.configuration.DiscordConfig;
+import com.huskydreaming.link.common.configuration.LinkConfig;
 import com.huskydreaming.link.common.database.DatabaseConnector;
 import com.huskydreaming.link.common.discord.DiscordClient;
 import com.huskydreaming.link.common.discord.events.LinkEventBus;
 import com.huskydreaming.link.common.initialization.DatabaseInitializer;
 import com.huskydreaming.link.common.initialization.DiscordInitializer;
 import com.huskydreaming.link.common.initialization.ServiceInitializer;
-import com.huskydreaming.link.common.repositories.LinkRepository;
 import com.huskydreaming.link.common.services.interfaces.CodeService;
 import com.huskydreaming.link.common.services.interfaces.DiscordService;
 import com.huskydreaming.link.common.services.interfaces.LinkService;
@@ -29,26 +29,26 @@ public class LinkCommonPlugin {
     private DiscordClient discordClient;
     private DatabaseConnector databaseConnector;
 
-    public void initialize(DatabaseConfig databaseConfig, DiscordConfig discordConfig, Logger logger) {
+    public void initialize(DatabaseConfig databaseConfig, DiscordConfig discordConfig, LinkConfig linkConfig, Logger logger) {
         // Database & repository initialization
-        var dbInit = new DatabaseInitializer(databaseConfig, logger);
-        databaseConnector = dbInit.initializeDatabaseConnector();
-        LinkRepository linkRepository = dbInit.initializeRepository(databaseConnector);
+        var databaseInitializer = new DatabaseInitializer(databaseConfig, logger);
+        databaseConnector = databaseInitializer.initializeDatabaseConnector();
+        var linkRepository = databaseInitializer.initializeRepository(databaseConnector);
 
         // Service initialization
-        var svcInit = new ServiceInitializer(executor);
-        codeService = svcInit.initializeCodeService();
-        linkService = svcInit.initializeLinkService(linkRepository);
+        var serviceInitializer = new ServiceInitializer(executor);
+        codeService = serviceInitializer.initializeCodeService();
+        linkService = serviceInitializer.initializeLinkService(linkRepository, linkConfig);
         linkService.initialize().exceptionally(ex -> {
             logger.error("Failed to initialize LinkService", ex);
             return null;
         });
 
         // Discord initialization
-        var discordInit = new DiscordInitializer(discordConfig, logger);
-        discordClient = discordInit.initializeDiscordClient();
-        discordService = discordInit.initializeDiscordService(discordClient);
-        discordInit.registerDiscordListeners(discordClient.getJda(), this);
+        var discordInitializer = new DiscordInitializer(discordConfig, logger);
+        discordClient = discordInitializer.initializeDiscordClient();
+        discordService = discordInitializer.initializeDiscordService(discordClient);
+        discordInitializer.registerDiscordListeners(discordClient.getJda(), this);
     }
 
     public CodeService getCodeService() {

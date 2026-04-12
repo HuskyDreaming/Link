@@ -1,5 +1,6 @@
 package com.huskydreaming.link.common.discord.commands;
 
+import com.huskydreaming.link.common.configuration.DiscordConfig;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.components.buttons.Button;
@@ -10,8 +11,16 @@ import java.awt.*;
 
 public class SetupCommand extends ListenerAdapter {
 
+    private final DiscordConfig discordConfig;
+
+    public SetupCommand(DiscordConfig discordConfig) {
+        this.discordConfig = discordConfig;
+    }
+
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        if (!event.getName().equals("setup")) return;
+
         var guild = event.getGuild();
         if (guild == null) {
             event.reply("Discord command guild is null!")
@@ -20,16 +29,24 @@ public class SetupCommand extends ListenerAdapter {
             return;
         }
 
-        var linkButton = Button.success("link_button", "✅ Authenticate Account");
-        var linkEmbed = new EmbedBuilder()
-                .setTitle("Account Linking")
-                .setDescription("Link your account to get in game rewards!")
-                .addField("Linking Guide:", " - Launch Minecraft\n - Join Wilden: `play.wilden.fun`\n - Run the link command `/link`\n - Input your Auth Code in <#1465655776306528353>", false)
-                .addField("Linking Rewards:", " - \uD83E\uDE99 2500 Gold\n - \uD83D\uDC8E 10 Gems\n - \uD83E\uDEBD 5 Minutes of Flight time", false)
-                .setColor(Color.decode("#97BA52"))
-                .build();
+        var embedConfig = discordConfig.embedConfig();
+        var linkButton = Button.success("link_button", embedConfig.buttonLabel());
 
-        event.getChannel().sendMessageEmbeds(linkEmbed)
+        var embedBuilder = new EmbedBuilder()
+                .setTitle(embedConfig.title())
+                .setDescription(embedConfig.description());
+
+        for (var field : embedConfig.fields()) {
+            embedBuilder.addField(field.name(), field.value(), field.inline());
+        }
+
+        try {
+            embedBuilder.setColor(Color.decode(embedConfig.color()));
+        } catch (NumberFormatException e) {
+            embedBuilder.setColor(Color.decode("#97BA52"));
+        }
+
+        event.getChannel().sendMessageEmbeds(embedBuilder.build())
                 .setComponents(ActionRow.of(linkButton))
                 .queue();
 

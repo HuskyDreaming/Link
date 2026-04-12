@@ -55,9 +55,9 @@ public class ModalListener extends ListenerAdapter {
             switch (result) {
                 case SUCCESS_REWARD -> {
                     editReply(event, "✅ Linked! You received your reward 🎉");
-                    linkEventBus.fire(new LinkEvent(uuid, discordId));
+                    linkEventBus.fire(new LinkEvent(uuid, discordId, true));
                     discordService.addRole(discordId).exceptionally(ex -> {
-                        event.reply("⚠️ Linked successfully, but failed to assign role. Please contact an administrator.")
+                        event.getHook().sendMessage("⚠️ Linked successfully, but failed to assign role. Please contact an administrator.")
                                 .setEphemeral(true)
                                 .queue();
                         return null;
@@ -65,8 +65,9 @@ public class ModalListener extends ListenerAdapter {
                 }
                 case SUCCESS_NO_REWARD -> {
                     editReply(event, "✅ Linked! You have already received your reward.");
+                    linkEventBus.fire(new LinkEvent(uuid, discordId, false));
                     discordService.addRole(discordId).exceptionally(ex -> {
-                        event.reply("⚠️ Linked successfully, but failed to assign role. Please contact an administrator.")
+                        event.getHook().sendMessage("⚠️ Linked successfully, but failed to assign role. Please contact an administrator.")
                                 .setEphemeral(true)
                                 .queue();
                         return null;

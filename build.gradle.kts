@@ -8,16 +8,15 @@ version = "1.0.0"
 subprojects {
     apply(plugin = "java")
 
+    group = rootProject.group
+    version = rootProject.version
+
     java {
         toolchain.languageVersion.set(JavaLanguageVersion.of(21))
     }
 
     repositories {
         mavenCentral()
-        maven {
-            name = "papermc"
-            url = uri("https://repo.papermc.io/repository/maven-public/")
-        }
     }
 
     tasks.withType<JavaCompile> {

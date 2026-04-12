@@ -1,5 +1,5 @@
 rootProject.name = "Link"
 
 include("velocity")
-include("papermc")
+include("spigotmc")
 include("common")

@@ -13,39 +13,38 @@ public class LinkEventBus {
         this.executor = executor;
     }
 
-    // 🔥 Register object with annotated methods
+    // Register listener with annotated @Subscribe methods
     public void register(Object listener) {
         for (Method method : listener.getClass().getDeclaredMethods()) {
 
-            if (!method.isAnnotationPresent(Subscribe.class)) continue;
+            if (!method.isAnnotationPresent(Subscribe.class)) {
+                continue;
+            }
 
             var params = method.getParameterTypes();
-            if (params.length != 1) continue;
+            if (params.length != 1) {
+                continue;
+            }
 
-            Class<?> eventType = params[0];
+            var eventType = params[0];
 
             method.setAccessible(true);
 
-            listeners
-                    .computeIfAbsent(eventType, k -> new CopyOnWriteArrayList<>())
+            listeners.computeIfAbsent(eventType, k -> new CopyOnWriteArrayList<>())
                     .add(new RegisteredListener(listener, method));
         }
     }
 
-    public CompletableFuture<Void> fire(Object event) {
+    public void fire(Object event) {
         var handlers = listeners.getOrDefault(event.getClass(), List.of());
 
-        var futures = handlers.stream()
-                .map(handler -> CompletableFuture.runAsync(() -> {
-                    try {
-                        handler.method.invoke(handler.instance, event);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }, executor))
-                .toArray(CompletableFuture[]::new);
-
-        return CompletableFuture.allOf(futures);
+        handlers.forEach(handler -> CompletableFuture.runAsync(() -> {
+            try {
+                handler.method.invoke(handler.instance, event);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }, executor));
     }
 
     private record RegisteredListener(Object instance, Method method) {}

@@ -1,0 +1,63 @@
+# Link - SpigotMC Plugin Configuration
+#
+# mode:
+#   velocity-bridge  ->  Receives commands from a Velocity proxy via plugin messaging.
+#                        No Discord bot or database needed on this server.
+#
+#   standalone       ->  Runs the full linking stack on this Spigot server (Discord bot + database).
+#                        Use this when there is NO Velocity proxy.
+mode: velocity-bridge
+
+# Database connection settings (standalone mode only)
+database:
+  host: "localhost"
+  port: 3306
+  name: "database_name"
+  username: "username"
+  password: "password"
+  pool:
+    # Maximum number of connections kept in the pool
+    maximum-pool-size: 10
+    # Minimum number of idle connections maintained
+    minimum-idle: 2
+    # Milliseconds to wait for a connection before throwing an error (default: 10s)
+    connection-timeout: 10000
+    # Milliseconds a connection can sit idle before being retired (default: 10m)
+    idle-timeout: 600000
+    # Milliseconds before a connection is retired regardless of activity.
+    # Must be less than your database server's wait_timeout.
+    # Lower this if you see "Failed to validate connection" warnings. (default: 30m)
+    max-lifetime: 1800000
+    # Milliseconds between keepalive pings on idle connections.
+    # Prevents the server from closing idle connections. (default: 1m)
+    keepalive-time: 60000
+
+# Discord bot settings (standalone mode only)
+discord:
+  token: ""
+  guild-id: 0
+  role-id: 0
+  embed:
+    title: "Account Linking"
+    description: "Link your account to get in-game rewards!"
+    color: "#97BA52"
+    button-label: "✅ Authenticate Account"
+    fields:
+      - name: "Linking Guide:"
+        value: " - Launch Minecraft\n - Join the server: `play.server.com`\n - Run `/link`\n - Enter your Auth Code in #link"
+        inline: false
+      - name: "Linking Rewards:"
+        value: " - 🪙 100 Gold\n - 💎 10 Gems"
+        inline: false
+
+# Linking behaviour and reward commands (standalone mode only)
+link:
+  # Seconds a player must wait before they can re-link after unlinking. (default: 3600 / 1 hour)
+  cooldown: 3600
+  # Commands dispatched as console when a player successfully links.
+  # %player% is replaced with the player's username.
+  link-commands:
+    - "say %player% has linked their account!"
+  # Commands dispatched as console when a player unlinks.
+  unlink-commands:
+    - "say %player% has unlinked their account!"

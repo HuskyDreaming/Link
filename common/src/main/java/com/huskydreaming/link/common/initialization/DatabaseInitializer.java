@@ -3,7 +3,7 @@ package com.huskydreaming.link.common.initialization;
 import com.huskydreaming.link.common.configuration.DatabaseConfig;
 import com.huskydreaming.link.common.database.DatabaseConnector;
 import com.huskydreaming.link.common.repositories.LinkRepository;
-import com.huskydreaming.link.common.repositories.LinkRepositoryImpl;
+import com.huskydreaming.link.common.repositories.impl.LinkRepositoryImpl;
 import org.slf4j.Logger;
 
 /**
@@ -33,4 +33,3 @@ public class DatabaseInitializer {
         return new LinkRepositoryImpl(connector);
     }
 }
-

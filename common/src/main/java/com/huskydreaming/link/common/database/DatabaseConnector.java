@@ -29,6 +29,23 @@ public class DatabaseConnector {
 
         var hikariConfig = new HikariConfig();
 
+        // Log connection summary (no password)
+        logger.info("Connecting to {}:{}/{} (pool size: {}, max-lifetime: {}ms, keepalive: {}ms)",
+                host, port, name,
+                databaseConfig.maximumPoolSize(),
+                databaseConfig.maxLifetime(),
+                databaseConfig.keepaliveTime());
+
+        // Sanity-check pool settings and warn if they look problematic
+        if (databaseConfig.keepaliveTime() == 0) {
+            logger.warn("'keepalive-time' is 0 — idle connections may be closed by the server. Consider setting it to ~60000.");
+        }
+        if (databaseConfig.maxLifetime() > 0 && databaseConfig.keepaliveTime() > 0
+                && databaseConfig.keepaliveTime() >= databaseConfig.maxLifetime()) {
+            logger.warn("'keepalive-time' ({}) should be less than 'max-lifetime' ({}).",
+                    databaseConfig.keepaliveTime(), databaseConfig.maxLifetime());
+        }
+
         hikariConfig.setJdbcUrl(
                 "jdbc:mariadb://" + host + ":" + port + "/" + name +
                         "?useSSL=false&autoReconnect=true&cachePrepStmts=true&useServerPrepStmts=true"
@@ -36,11 +53,12 @@ public class DatabaseConnector {
 
         hikariConfig.setUsername(username);
         hikariConfig.setPassword(password);
-        hikariConfig.setMaximumPoolSize(10);
-        hikariConfig.setMinimumIdle(5);
-        hikariConfig.setConnectionTimeout(10000);
-        hikariConfig.setIdleTimeout(600000);
-        hikariConfig.setMaxLifetime(1800000);
+        hikariConfig.setMaximumPoolSize(databaseConfig.maximumPoolSize());
+        hikariConfig.setMinimumIdle(databaseConfig.minimumIdle());
+        hikariConfig.setConnectionTimeout(databaseConfig.connectionTimeout());
+        hikariConfig.setIdleTimeout(databaseConfig.idleTimeout());
+        hikariConfig.setMaxLifetime(databaseConfig.maxLifetime());
+        hikariConfig.setKeepaliveTime(databaseConfig.keepaliveTime());
         hikariConfig.setPoolName("LinkPool");
 
         dataSource = new HikariDataSource(hikariConfig);

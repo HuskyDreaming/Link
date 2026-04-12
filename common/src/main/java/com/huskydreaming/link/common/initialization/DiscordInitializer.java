@@ -6,7 +6,7 @@ import com.huskydreaming.link.common.discord.DiscordClient;
 import com.huskydreaming.link.common.discord.commands.SetupCommand;
 import com.huskydreaming.link.common.discord.listeners.ButtonListener;
 import com.huskydreaming.link.common.discord.listeners.ModalListener;
-import com.huskydreaming.link.common.services.implementations.DiscordServiceImpl;
+import com.huskydreaming.link.common.services.impl.DiscordServiceImpl;
 import com.huskydreaming.link.common.services.interfaces.DiscordService;
 import net.dv8tion.jda.api.JDA;
 import org.slf4j.Logger;
@@ -28,6 +28,7 @@ public class DiscordInitializer {
      * Creates and initializes a DiscordClient (JDA connection).
      */
     public DiscordClient initializeDiscordClient() {
+        config.validate(logger);
         return new DiscordClient(config);
     }
 
@@ -44,9 +45,8 @@ public class DiscordInitializer {
     public void registerDiscordListeners(JDA jda, LinkCommonPlugin plugin) {
         jda.addEventListener(
                 new ButtonListener(),
-                new SetupCommand(),
+                new SetupCommand(config),
                 new ModalListener(plugin, logger)
         );
     }
 }
-
