@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 public class DiscordServiceImpl implements DiscordService {
 
-    private final DiscordConfig discordConfig;
+    private volatile DiscordConfig discordConfig;
     private final Logger logger;
     private final JDA jda;
 
@@ -20,6 +20,11 @@ public class DiscordServiceImpl implements DiscordService {
         this.discordConfig = discordConfig;
         this.jda = discordClient.getJda();
         this.logger = logger;
+    }
+
+    @Override
+    public void updateConfig(DiscordConfig config) {
+        this.discordConfig = config;
     }
 
     @Override

@@ -1,0 +1,16 @@
+# Link - Discord Bot Configuration
+token: ""
+guild-id: 0
+role-id: 0
+embed:
+  title: "Account Linking"
+  description: "Link your account to get in-game rewards!"
+  color: "#97BA52"
+  button-label: "✅ Authenticate Account"
+  fields:
+    - name: "Linking Guide:"
+      value: " - Launch Minecraft\n - Join the server: `play.server.com`\n - Run `/link`\n - Enter your Auth Code in #link"
+      inline: false
+    - name: "Linking Rewards:"
+      value: " - 🪙 100 Gold\n - 💎 10 Gems"
+      inline: false

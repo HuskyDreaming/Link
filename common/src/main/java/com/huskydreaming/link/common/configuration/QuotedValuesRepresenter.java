@@ -35,12 +35,12 @@ class QuotedValuesRepresenter extends Representer {
 
     @Override
     protected Node representMapping(Tag tag, Map<?, ?> mapping, DumperOptions.FlowStyle flowStyle) {
-        var n = super.representMapping(tag, mapping, flowStyle);
-        if (!(n instanceof MappingNode node)) {
-            return n;
+        var node = super.representMapping(tag, mapping, flowStyle);
+        if (!(node instanceof MappingNode mappingNode)) {
+            return node;
         }
 
-        var tuples = node.getValue();
+        var tuples = mappingNode.getValue();
         for (var i = 0; i < tuples.size(); i++) {
             if (tuples.get(i).getKeyNode() instanceof ScalarNode keyScalar) {
                 var plainKey = new ScalarNode(
@@ -56,4 +56,3 @@ class QuotedValuesRepresenter extends Representer {
         return node;
     }
 }
-

@@ -25,7 +25,7 @@ public record EmbedConfig(
      * reading values from the {@code discord.embed} section.
      */
     public static EmbedConfig fromYaml(YamlConfig config) {
-        var fields = config.getMapList("discord.embed.fields")
+        var fields = config.getMapList("embed.fields")
                 .stream()
                 .map(m -> new EmbedFieldConfig(
                         getStringOrEmpty(m, "name"),
@@ -35,10 +35,10 @@ public record EmbedConfig(
                 .toList();
 
         return new EmbedConfig(
-                config.getString("discord.embed.title", "Account Linking"),
-                config.getString("discord.embed.description", "Link your Minecraft account to Discord."),
-                config.getString("discord.embed.color", "#97BA52"),
-                config.getString("discord.embed.button-label", "✅ Authenticate Account"),
+                config.getString("embed.title", "Account Linking"),
+                config.getString("embed.description", "Link your Minecraft account to Discord."),
+                config.getString("embed.color", "#97BA52"),
+                config.getString("embed.button-label", "✅ Authenticate Account"),
                 fields
         );
     }

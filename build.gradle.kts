@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "com.huskydreaming"
-version = "1.0.0"
+version = "1.0.1"
 
 subprojects {
     apply(plugin = "java")
@@ -21,6 +21,13 @@ subprojects {
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
+    }
+
+    tasks.withType<ProcessResources> {
+        val projectVersion = project.version.toString()
+        filesMatching(listOf("plugin.yml", "velocity-plugin.json")) {
+            expand("version" to projectVersion)
+        }
     }
 }
 

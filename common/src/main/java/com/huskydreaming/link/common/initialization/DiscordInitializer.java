@@ -42,10 +42,10 @@ public class DiscordInitializer {
     /**
      * Registers Discord event listeners (button, modal, setup command).
      */
-    public void registerDiscordListeners(JDA jda, LinkCommonPlugin plugin) {
+    public void registerDiscordListeners(JDA jda, LinkCommonPlugin plugin, SetupCommand setupCommand) {
         jda.addEventListener(
                 new ButtonListener(),
-                new SetupCommand(config),
+                setupCommand,
                 new ModalListener(plugin, logger)
         );
     }

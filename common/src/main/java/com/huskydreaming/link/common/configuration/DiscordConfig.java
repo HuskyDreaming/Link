@@ -23,9 +23,9 @@ public record DiscordConfig(
      */
     public static DiscordConfig fromYaml(YamlConfig config) {
         return new DiscordConfig(
-                config.getString("discord.token", ""),
-                config.getLong("discord.guild-id", 0L),
-                config.getLong("discord.role-id", 0L),
+                config.getString("token", ""),
+                config.getLong("guild-id", 0L),
+                config.getLong("role-id", 0L),
                 EmbedConfig.fromYaml(config)
         );
     }

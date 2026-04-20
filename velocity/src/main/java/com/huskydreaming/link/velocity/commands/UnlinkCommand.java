@@ -32,6 +32,11 @@ public class UnlinkCommand implements SimpleCommand {
     public void execute(Invocation invocation) {
         if (!(invocation.source() instanceof Player player)) return;
 
+        if (!player.hasPermission("link.unlink")) {
+            player.sendMessage(Messages.NO_PERMISSION.get());
+            return;
+        }
+
         var uuid = player.getUniqueId();
 
         linkService.checkLinkStatus(uuid).thenAccept(result -> {
@@ -62,5 +67,9 @@ public class UnlinkCommand implements SimpleCommand {
             return null;
         });
     }
-}
 
+    @Override
+    public boolean hasPermission(Invocation invocation) {
+        return invocation.source().hasPermission("link.unlink");
+    }
+}

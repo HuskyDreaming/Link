@@ -9,12 +9,17 @@ package com.huskydreaming.link.common.utilities;
  */
 public final class ChannelConstants {
 
-    private ChannelConstants() {}
+    private ChannelConstants() {
+    }
 
-    /** Namespace portion of the plugin-message channel identifier. */
+    /**
+     * Namespace portion of the plugin-message channel identifier.
+     */
     public static final String CHANNEL_NAMESPACE = "link";
 
-    /** Name portion of the plugin-message channel identifier. */
+    /**
+     * Name portion of the plugin-message channel identifier.
+     */
     public static final String CHANNEL_NAME = "commands";
 
     /**
@@ -29,4 +34,3 @@ public final class ChannelConstants {
      */
     public static final String COMMAND_DELIMITER = ";;";
 }
-

@@ -23,6 +23,7 @@ public class VelocityInitializer {
     private final ProxyServer proxy;
     private final Path dataDirectory;
     private final Logger logger;
+    private LinkCommonPlugin linkCommon;
 
     public VelocityInitializer(ProxyServer proxy, Path dataDirectory, Logger logger) {
         this.proxy = proxy;
@@ -33,11 +34,15 @@ public class VelocityInitializer {
     /**
      * Initializes the Velocity plugin: loads configs, sets up common resources, and registers commands.
      */
-    public void initialize(LinkCommonPlugin linkCommon) {
-        // Load configuration
+    public void initialize(LinkCommonPlugin linkCommonPlugin) {
+        this.linkCommon = linkCommonPlugin;
+
         var config = YamlConfig.loadAndMergeDefaults(dataDirectory, "config.yml");
-        var databaseConfiguration = DatabaseConfig.fromYaml(config);
-        var discordConfiguration = DiscordConfig.fromYaml(config);
+        var dbConfig = YamlConfig.loadAndMergeDefaults(dataDirectory, "database.yml");
+        var discordYaml = YamlConfig.loadAndMergeDefaults(dataDirectory, "discord.yml");
+
+        var databaseConfiguration = DatabaseConfig.fromYaml(dbConfig);
+        var discordConfiguration = DiscordConfig.fromYaml(discordYaml);
         var linkConfig = LinkConfig.fromYaml(config);
 
         // Load messages
@@ -47,28 +52,48 @@ public class VelocityInitializer {
         linkCommon.initialize(databaseConfiguration, discordConfiguration, linkConfig, logger);
 
         // Register Velocity commands
-        registerCommands(linkCommon, linkConfig);
+        registerCommands(linkConfig);
 
         // Register link event listener
         linkCommon.getLinkEventBus().register(new LinkListener(proxy, logger, linkConfig));
     }
 
     /**
+     * Safely reloads messages and config values without restarting JDA or the database.
+     */
+    public void reload() {
+        var config = YamlConfig.loadAndMergeDefaults(dataDirectory, "config.yml");
+        YamlConfig.loadAndMergeDefaults(dataDirectory, "database.yml");
+        var discordYaml = YamlConfig.loadAndMergeDefaults(dataDirectory, "discord.yml");
+        var linkConfig = LinkConfig.fromYaml(config);
+
+        Messages.load(dataDirectory);
+
+        if (linkCommon != null) {
+            linkCommon.getLinkService().updateCooldown(linkConfig.cooldownMillis());
+            linkCommon.reloadDiscordConfig(DiscordConfig.fromYaml(discordYaml));
+        }
+
+        registerCommands(linkConfig);
+        logger.info("Configuration reloaded.");
+    }
+
+    /**
      * Registers /link and /unlink commands with the command manager.
      */
-    private void registerCommands(LinkCommonPlugin linkCommon, LinkConfig linkConfig) {
+    private void registerCommands(LinkConfig linkConfig) {
         var commandManager = proxy.getCommandManager();
+        var pluginContainer = proxy.getPluginManager().getPlugin("link").orElse(null);
 
-        var linkCommandMeta = commandManager.metaBuilder("link")
-                .plugin(proxy.getPluginManager().getPlugin("link").orElse(null))
+        var linkMeta = commandManager.metaBuilder("link")
+                .plugin(pluginContainer)
                 .build();
 
-        var unlinkCommandMeta = commandManager.metaBuilder("unlink")
-                .plugin(proxy.getPluginManager().getPlugin("link").orElse(null))
+        var unlinkMeta = commandManager.metaBuilder("unlink")
+                .plugin(pluginContainer)
                 .build();
 
-        commandManager.register(linkCommandMeta, new LinkCommand(linkCommon.getCodeService(), linkCommon.getLinkService()));
-        commandManager.register(unlinkCommandMeta, new UnlinkCommand(linkCommon.getDiscordService(), linkCommon.getLinkService(), proxy, linkConfig, logger));
+        commandManager.register(linkMeta, new LinkCommand(this, linkCommon.getCodeService(), linkCommon.getLinkService()));
+        commandManager.register(unlinkMeta, new UnlinkCommand(linkCommon.getDiscordService(), linkCommon.getLinkService(), proxy, linkConfig, logger));
     }
 }
-

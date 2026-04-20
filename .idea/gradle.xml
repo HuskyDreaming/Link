@@ -10,7 +10,8 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/common" />
-            <option value="$PROJECT_DIR$/spigotmc" />
+            <option value="$PROJECT_DIR$/folia" />
+            <option value="$PROJECT_DIR$/spigot" />
             <option value="$PROJECT_DIR$/velocity" />
           </set>
         </option>

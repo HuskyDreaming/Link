@@ -13,12 +13,17 @@ public class LinkServiceImpl implements LinkService {
 
     private final LinkRepository repository;
     private final ExecutorService executor;
-    private final long cooldownMillis;
+    private volatile long cooldownMillis;
 
     public LinkServiceImpl(LinkRepository repository, ExecutorService executor, LinkConfig linkConfig) {
         this.repository = repository;
         this.executor = executor;
         this.cooldownMillis = linkConfig.cooldownMillis();
+    }
+
+    @Override
+    public void updateCooldown(long cooldownMillis) {
+        this.cooldownMillis = cooldownMillis;
     }
 
     @Override

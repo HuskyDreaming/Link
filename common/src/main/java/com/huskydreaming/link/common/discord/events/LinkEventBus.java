@@ -15,7 +15,7 @@ public class LinkEventBus {
 
     // Register listener with annotated @Subscribe methods
     public void register(Object listener) {
-        for (Method method : listener.getClass().getDeclaredMethods()) {
+        for (var method : listener.getClass().getDeclaredMethods()) {
 
             if (!method.isAnnotationPresent(Subscribe.class)) {
                 continue;
@@ -47,5 +47,6 @@ public class LinkEventBus {
         }, executor));
     }
 
-    private record RegisteredListener(Object instance, Method method) {}
+    private record RegisteredListener(Object instance, Method method) {
+    }
 }

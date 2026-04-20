@@ -1,0 +1,37 @@
+# Link - Database Configuration
+
+# Driver to use: sqlite | mysql | mariadb | postgresql
+# SQLite requires no server setup and is the default. Ideal for single-server setups.
+# For networks or high-traffic servers, use mysql, mariadb, or postgresql.
+driver: sqlite
+
+# Path to the SQLite database file (only used when driver is 'sqlite')
+file: "plugins/link/link.db"
+
+# Remote database settings (ignored when driver is 'sqlite')
+host: "localhost"
+port: 3306
+name: "link"
+username: "username"
+password: "password"
+pool:
+  # Maximum number of connections kept in the pool (forced to 1 for SQLite)
+  maximum-pool-size: 10
+
+  # Minimum number of idle connections maintained
+  minimum-idle: 2
+
+  # Milliseconds to wait for a connection before throwing an error (default: 10s)
+  connection-timeout: 10000
+
+  # Milliseconds a connection can sit idle before being retired (default: 10m)
+  idle-timeout: 600000
+
+  # Milliseconds before a connection is retired regardless of activity.
+  # Must be less than your database server's wait_timeout.
+  # Lower this if you see "Failed to validate connection" warnings. (default: 30m)
+  max-lifetime: 1800000
+
+  # Milliseconds between keepalive pings on idle connections.
+  # Prevents the server from closing idle connections. (default: 1m)
+  keepalive-time: 60000

@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -14,65 +15,122 @@ public class DatabaseConnector {
 
     public DatabaseConnector(DatabaseConfig databaseConfig, Logger logger) {
 
-        try {
-            Class.forName("org.mariadb.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("MariaDB driver not found in classpath", e);
-        }
-
-        var host = require(databaseConfig.host(), "host");
-        var name = require(databaseConfig.name(), "database name");
-        var port = databaseConfig.port();
-        var username = require(databaseConfig.username(), "username");
-        var password = require(databaseConfig.password(), "password");
-
-
         var hikariConfig = new HikariConfig();
+        var driver = databaseConfig.driver() == null ? "sqlite" : databaseConfig.driver().toLowerCase();
 
-        // Log connection summary (no password)
-        logger.info("Connecting to {}:{}/{} (pool size: {}, max-lifetime: {}ms, keepalive: {}ms)",
-                host, port, name,
-                databaseConfig.maximumPoolSize(),
-                databaseConfig.maxLifetime(),
-                databaseConfig.keepaliveTime());
-
-        // Sanity-check pool settings and warn if they look problematic
-        if (databaseConfig.keepaliveTime() == 0) {
-            logger.warn("'keepalive-time' is 0 — idle connections may be closed by the server. Consider setting it to ~60000.");
-        }
-        if (databaseConfig.maxLifetime() > 0 && databaseConfig.keepaliveTime() > 0
-                && databaseConfig.keepaliveTime() >= databaseConfig.maxLifetime()) {
-            logger.warn("'keepalive-time' ({}) should be less than 'max-lifetime' ({}).",
-                    databaseConfig.keepaliveTime(), databaseConfig.maxLifetime());
+        switch (driver) {
+            case "sqlite" -> configureSqlite(hikariConfig, databaseConfig, logger);
+            case "mysql"  -> configureMysql(hikariConfig, databaseConfig, logger);
+            case "mariadb" -> configureMariadb(hikariConfig, databaseConfig, logger);
+            case "postgresql", "postgres" -> configurePostgresql(hikariConfig, databaseConfig, logger);
+            default -> throw new IllegalArgumentException("Unknown database driver: '" + driver +
+                    "'. Supported: sqlite, mysql, mariadb, postgresql");
         }
 
-        hikariConfig.setJdbcUrl(
-                "jdbc:mariadb://" + host + ":" + port + "/" + name +
-                        "?useSSL=false&autoReconnect=true&cachePrepStmts=true&useServerPrepStmts=true"
-        );
-
-        hikariConfig.setUsername(username);
-        hikariConfig.setPassword(password);
-        hikariConfig.setMaximumPoolSize(databaseConfig.maximumPoolSize());
-        hikariConfig.setMinimumIdle(databaseConfig.minimumIdle());
-        hikariConfig.setConnectionTimeout(databaseConfig.connectionTimeout());
-        hikariConfig.setIdleTimeout(databaseConfig.idleTimeout());
-        hikariConfig.setMaxLifetime(databaseConfig.maxLifetime());
-        hikariConfig.setKeepaliveTime(databaseConfig.keepaliveTime());
         hikariConfig.setPoolName("LinkPool");
-
         dataSource = new HikariDataSource(hikariConfig);
 
-        try (var ignored = dataSource.getConnection()) {
-            logger.info("Database connected successfully!");
+        try (var conn = dataSource.getConnection()) {
+            if ("sqlite".equals(driver)) {
+                // Enable WAL mode for better concurrent read performance
+                try (var stmt = conn.createStatement()) {
+                    stmt.execute("PRAGMA journal_mode=WAL");
+                    stmt.execute("PRAGMA foreign_keys=ON");
+                }
+            }
+            logger.info("Database connected successfully! (driver: {})", driver);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to connect to database", e);
         }
     }
 
-    private String require(String value, String field) {
+    private void configureSqlite(HikariConfig hikari, DatabaseConfig cfg, Logger logger) {
+        loadDriverClass("org.sqlite.JDBC", "SQLite");
+
+        var dbFile = new File(cfg.file());
+        if (dbFile.getParentFile() != null) {
+            dbFile.getParentFile().mkdirs();
+        }
+
+        logger.info("Using SQLite database at: {}", dbFile.getAbsolutePath());
+
+        hikari.setJdbcUrl("jdbc:sqlite:" + dbFile.getAbsolutePath());
+        // SQLite is single-writer; pool size must be 1
+        hikari.setMaximumPoolSize(1);
+        hikari.setMinimumIdle(1);
+        hikari.setConnectionTimeout(cfg.connectionTimeout());
+        // Disable keepalive and idle-timeout — not applicable for file-based DBs
+        hikari.setIdleTimeout(0);
+        hikari.setMaxLifetime(0);
+        hikari.setKeepaliveTime(0);
+        hikari.setConnectionTestQuery("SELECT 1");
+    }
+
+    private void configureMysql(HikariConfig hikari, DatabaseConfig cfg, Logger logger) {
+        loadDriverClass("com.mysql.cj.jdbc.Driver", "MySQL");
+        logRemoteConnection("MySQL", cfg, logger);
+        validateRemote(cfg);
+
+        hikari.setJdbcUrl("jdbc:mysql://" + cfg.host() + ":" + cfg.port() + "/" + cfg.name() +
+                "?useSSL=false&autoReconnect=true&cachePrepStmts=true&useServerPrepStmts=true" +
+                "&serverTimezone=UTC");
+        applyRemotePoolSettings(hikari, cfg);
+    }
+
+    private void configureMariadb(HikariConfig hikari, DatabaseConfig cfg, Logger logger) {
+        loadDriverClass("org.mariadb.jdbc.Driver", "MariaDB");
+        logRemoteConnection("MariaDB", cfg, logger);
+        validateRemote(cfg);
+
+        hikari.setJdbcUrl("jdbc:mariadb://" + cfg.host() + ":" + cfg.port() + "/" + cfg.name() +
+                "?useSSL=false&autoReconnect=true&cachePrepStmts=true&useServerPrepStmts=true");
+        applyRemotePoolSettings(hikari, cfg);
+    }
+
+    private void configurePostgresql(HikariConfig hikari, DatabaseConfig cfg, Logger logger) {
+        loadDriverClass("org.postgresql.Driver", "PostgreSQL");
+        logRemoteConnection("PostgreSQL", cfg, logger);
+        validateRemote(cfg);
+
+        hikari.setJdbcUrl("jdbc:postgresql://" + cfg.host() + ":" + cfg.port() + "/" + cfg.name());
+        applyRemotePoolSettings(hikari, cfg);
+    }
+
+    private void applyRemotePoolSettings(HikariConfig hikari, DatabaseConfig cfg) {
+        hikari.setUsername(cfg.username());
+        hikari.setPassword(cfg.password());
+        hikari.setMaximumPoolSize(cfg.maximumPoolSize());
+        hikari.setMinimumIdle(cfg.minimumIdle());
+        hikari.setConnectionTimeout(cfg.connectionTimeout());
+        hikari.setIdleTimeout(cfg.idleTimeout());
+        hikari.setMaxLifetime(cfg.maxLifetime());
+        hikari.setKeepaliveTime(cfg.keepaliveTime());
+    }
+
+    private void validateRemote(DatabaseConfig cfg) {
+        require(cfg.host(), "host");
+        require(cfg.name(), "database name");
+        require(cfg.username(), "username");
+        require(cfg.password(), "password");
+    }
+
+    private void logRemoteConnection(String driverName, DatabaseConfig cfg, Logger logger) {
+        logger.info("Connecting to {} at {}:{}/{} (pool size: {}, max-lifetime: {}ms, keepalive: {}ms)",
+                driverName, cfg.host(), cfg.port(), cfg.name(),
+                cfg.maximumPoolSize(), cfg.maxLifetime(), cfg.keepaliveTime());
+    }
+
+    private static void loadDriverClass(String className, String driverName) {
+        try {
+            Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(driverName + " driver not found in classpath", e);
+        }
+    }
+
+    private static String require(String value, String field) {
         if (value == null || value.isBlank()) {
-            throw new IllegalStateException("Database " + field + " is missing in config.yml");
+            throw new IllegalStateException("Database " + field + " is missing in database.yml");
         }
         return value;
     }

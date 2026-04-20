@@ -28,7 +28,7 @@ public class BackendCommandSender {
     }
 
     private static void dispatch(ProxyServer proxyServer, Player player, LinkConfig linkConfig,
-                                  Function<ServerConfig, List<String>> commandExtractor, String label, Logger logger) {
+                                 Function<ServerConfig, List<String>> commandExtractor, String label, Logger logger) {
         var servers = linkConfig.servers();
         if (servers.isEmpty()) {
             logger.warn("No servers configured — no {} commands will be dispatched.", label);
@@ -61,4 +61,3 @@ public class BackendCommandSender {
         return server.sendPluginMessage(COMMANDS_CHANNEL, data);
     }
 }
-

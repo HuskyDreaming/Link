@@ -15,7 +15,6 @@ dependencies {
     implementation(project(":common"))
 
     compileOnly("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
-    annotationProcessor("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
 }
 
 tasks.jar {
@@ -24,7 +23,7 @@ tasks.jar {
 
 tasks.withType<ShadowJar> {
     archiveBaseName.set("Link")
-    archiveClassifier.set("")
+    archiveClassifier.set("velocity")
     mergeServiceFiles()
 
     // Relocate shaded libs to avoid classpath conflicts on the proxy

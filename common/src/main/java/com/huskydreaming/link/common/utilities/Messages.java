@@ -22,11 +22,13 @@ public enum Messages {
     BROADCAST_MESSAGE("broadcast-message"),
     COOLDOWN("cooldown"),
     LINK_ERROR("link-error"),
+    NO_PERMISSION("no-permission"),
     NOT_LINKED("not-linked"),
     PLAYERS_ONLY("players-only"),
     PLAYER_CODE("player-code"),
     PLAYER_MESSAGE("player-message"),
     PLAYER_MESSAGE_NO_REWARD("player-message-no-reward"),
+    RELOAD_SUCCESS("reload-success"),
     ROLE_REMOVE_ERROR("role-remove-error"),
     UNLINKED("unlinked"),
     UNLINK_ERROR("unlink-error");
@@ -76,4 +78,3 @@ public enum Messages {
         }
     }
 }
-

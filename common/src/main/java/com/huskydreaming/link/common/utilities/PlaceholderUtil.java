@@ -10,7 +10,8 @@ import java.util.List;
  */
 public final class PlaceholderUtil {
 
-    private PlaceholderUtil() {}
+    private PlaceholderUtil() {
+    }
 
     /**
      * Replaces {@code %player%} in every command string with {@code playerName}.
@@ -36,4 +37,3 @@ public final class PlaceholderUtil {
         return command.replace("%player%", playerName);
     }
 }
-

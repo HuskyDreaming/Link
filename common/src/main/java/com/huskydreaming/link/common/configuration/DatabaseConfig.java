@@ -1,8 +1,10 @@
 package com.huskydreaming.link.common.configuration;
 
 /**
- * Immutable representation of the {@code database} block in {@code config.yml}.
+ * Immutable representation of the {@code database.yml} configuration.
  *
+ * @param driver            Database driver: sqlite, mysql, mariadb, or postgresql.
+ * @param file              File path for SQLite databases (ignored for other drivers).
  * @param host              Database host address.
  * @param port              Database port.
  * @param name              Database (schema) name.
@@ -16,6 +18,8 @@ package com.huskydreaming.link.common.configuration;
  * @param keepaliveTime     Milliseconds between keepalive pings on idle connections.
  */
 public record DatabaseConfig(
+        String driver,
+        String file,
         String host,
         int port,
         String name,
@@ -34,17 +38,24 @@ public record DatabaseConfig(
      */
     public static DatabaseConfig fromYaml(YamlConfig config) {
         return new DatabaseConfig(
-                config.getString("database.host", "localhost"),
-                config.getInt("database.port", 3306),
-                config.getString("database.name", ""),
-                config.getString("database.username", ""),
-                config.getString("database.password", ""),
-                config.getInt("database.pool.maximum-pool-size", 10),
-                config.getInt("database.pool.minimum-idle", 2),
-                config.getLong("database.pool.connection-timeout", 10000L),
-                config.getLong("database.pool.idle-timeout", 600000L),
-                config.getLong("database.pool.max-lifetime", 1800000L),
-                config.getLong("database.pool.keepalive-time", 60000L)
+                config.getString("driver", "sqlite"),
+                config.getString("file", "plugins/link/link.db"),
+                config.getString("host", "localhost"),
+                config.getInt("port", 3306),
+                config.getString("name", "link"),
+                config.getString("username", ""),
+                config.getString("password", ""),
+                config.getInt("pool.maximum-pool-size", 10),
+                config.getInt("pool.minimum-idle", 2),
+                config.getLong("pool.connection-timeout", 10000L),
+                config.getLong("pool.idle-timeout", 600000L),
+                config.getLong("pool.max-lifetime", 1800000L),
+                config.getLong("pool.keepalive-time", 60000L)
         );
+    }
+
+    /** Returns true if the configured driver is SQLite. */
+    public boolean isSqlite() {
+        return "sqlite".equalsIgnoreCase(driver);
     }
 }

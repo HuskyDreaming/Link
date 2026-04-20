@@ -9,6 +9,8 @@ public interface LinkService {
 
     CompletableFuture<Void> initialize();
 
+    void updateCooldown(long cooldownMillis);
+
     CompletableFuture<LinkResult> checkLinkStatus(UUID uuid);
 
     CompletableFuture<Long> getRemainingCooldown(UUID uuid);

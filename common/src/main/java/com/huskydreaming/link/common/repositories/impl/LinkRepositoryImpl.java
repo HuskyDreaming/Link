@@ -66,7 +66,7 @@ public class LinkRepositoryImpl implements LinkRepository {
     public void insert(UUID uuid, long discordId, long time) {
         var query = """
             INSERT INTO discord_links (uuid, discord_id, linked, reward_claimed, last_linked_at)
-            VALUES (?, ?, true, false, ?)
+            VALUES (?, ?, ?, ?, ?)
         """;
 
         try (var conn = databaseConnector.getConnection();
@@ -74,7 +74,9 @@ public class LinkRepositoryImpl implements LinkRepository {
 
             stmt.setString(1, uuid.toString());
             stmt.setLong(2, discordId);
-            stmt.setLong(3, time);
+            stmt.setBoolean(3, true);
+            stmt.setBoolean(4, false);
+            stmt.setLong(5, time);
             stmt.executeUpdate();
 
         } catch (SQLException e) {
@@ -86,7 +88,7 @@ public class LinkRepositoryImpl implements LinkRepository {
     public void updateLink(UUID uuid, long discordId, long time) {
         var query = """
             UPDATE discord_links
-            SET discord_id = ?, linked = true, last_linked_at = ?
+            SET discord_id = ?, linked = ?, last_linked_at = ?
             WHERE uuid = ?
         """;
 
@@ -94,8 +96,9 @@ public class LinkRepositoryImpl implements LinkRepository {
              var stmt = conn.prepareStatement(query)) {
 
             stmt.setLong(1, discordId);
-            stmt.setLong(2, time);
-            stmt.setString(3, uuid.toString());
+            stmt.setBoolean(2, true);
+            stmt.setLong(3, time);
+            stmt.setString(4, uuid.toString());
             stmt.executeUpdate();
 
         } catch (SQLException e) {
@@ -107,14 +110,16 @@ public class LinkRepositoryImpl implements LinkRepository {
     public boolean claimReward(UUID uuid) {
         var query = """
             UPDATE discord_links
-            SET reward_claimed = true
-            WHERE uuid = ? AND reward_claimed = false
+            SET reward_claimed = ?
+            WHERE uuid = ? AND reward_claimed = ?
         """;
 
         try (var conn = databaseConnector.getConnection();
              var stmt = conn.prepareStatement(query)) {
 
-            stmt.setString(1, uuid.toString());
+            stmt.setBoolean(1, true);
+            stmt.setString(2, uuid.toString());
+            stmt.setBoolean(3, false);
             return stmt.executeUpdate() == 1;
 
         } catch (SQLException e) {

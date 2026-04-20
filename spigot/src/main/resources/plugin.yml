@@ -1,0 +1,28 @@
+name: Link
+version: ${version}
+api-version: "1.21"
+main: com.huskydreaming.link.spigot.LinkSpigotPlugin
+description: "Link - links Minecraft accounts with Discord. Supports standalone and velocity-bridge modes."
+authors:
+  - HuskyDreaming
+
+commands:
+  link:
+    description: Link your Minecraft account with Discord. Use '/link reload' to reload config (requires link.reload permission).
+    usage: /link [reload]
+    permission: link.link
+  unlink:
+    description: Unlink your Minecraft account from Discord.
+    usage: /unlink
+    permission: link.unlink
+
+permissions:
+  link.link:
+    description: Allows players to use /link.
+    default: true
+  link.unlink:
+    description: Allows players to use /unlink.
+    default: true
+  link.reload:
+    description: Allows use of /link reload to reload the plugin configuration.
+    default: op

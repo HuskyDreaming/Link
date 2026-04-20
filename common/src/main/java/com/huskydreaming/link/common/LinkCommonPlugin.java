@@ -12,6 +12,7 @@ import com.huskydreaming.link.common.initialization.ServiceInitializer;
 import com.huskydreaming.link.common.services.interfaces.CodeService;
 import com.huskydreaming.link.common.services.interfaces.DiscordService;
 import com.huskydreaming.link.common.services.interfaces.LinkService;
+import com.huskydreaming.link.common.discord.commands.SetupCommand;
 import org.slf4j.Logger;
 
 import java.util.concurrent.ExecutorService;
@@ -28,6 +29,7 @@ public class LinkCommonPlugin {
 
     private DiscordClient discordClient;
     private DatabaseConnector databaseConnector;
+    private SetupCommand setupCommand;
 
     public void initialize(DatabaseConfig databaseConfig, DiscordConfig discordConfig, LinkConfig linkConfig, Logger logger) {
         // Database & repository initialization
@@ -48,7 +50,13 @@ public class LinkCommonPlugin {
         var discordInitializer = new DiscordInitializer(discordConfig, logger);
         discordClient = discordInitializer.initializeDiscordClient();
         discordService = discordInitializer.initializeDiscordService(discordClient);
-        discordInitializer.registerDiscordListeners(discordClient.getJda(), this);
+        setupCommand = new SetupCommand(discordConfig);
+        discordInitializer.registerDiscordListeners(discordClient.getJda(), this, setupCommand);
+    }
+
+    public void reloadDiscordConfig(DiscordConfig discordConfig) {
+        if (discordService != null) discordService.updateConfig(discordConfig);
+        if (setupCommand != null) setupCommand.updateConfig(discordConfig);
     }
 
     public CodeService getCodeService() {

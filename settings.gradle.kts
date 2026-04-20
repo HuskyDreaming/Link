@@ -1,5 +1,6 @@
 rootProject.name = "Link"
 
 include("velocity")
-include("spigotmc")
+include("spigot")
+include("folia")
 include("common")

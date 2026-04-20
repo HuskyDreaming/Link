@@ -1,0 +1,10 @@
+{
+  "id": "link",
+  "name": "Link",
+  "version": "${version}",
+  "description": "Link is a plugin that allows you to link your Minecraft account with your Discord account.",
+  "authors": ["HuskyDreaming"],
+  "url": "huskydreaming.com",
+  "main": "com.huskydreaming.link.velocity.LinkVelocityPlugin"
+}
+

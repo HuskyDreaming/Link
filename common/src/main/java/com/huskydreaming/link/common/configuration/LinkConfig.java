@@ -29,21 +29,21 @@ public record LinkConfig(
      * {@code link.unlink-commands}) layouts.
      */
     public static LinkConfig fromYaml(YamlConfig config) {
-        long cooldownSeconds = config.getLong("link.cooldown", 3600L);
+        long cooldownSeconds = config.getLong("cooldown", 3600L);
         long cooldownMillis = TimeUnit.SECONDS.toMillis(cooldownSeconds);
 
-        // Velocity: per-server commands under link.servers.<name>.link-commands / unlink-commands
-        var serverNames = config.getKeys("link.servers");
+        // Velocity: per-server commands under servers.<name>.link-commands / unlink-commands
+        var serverNames = config.getKeys("servers");
         var servers = new HashMap<String, ServerConfig>();
         for (var serverName : serverNames) {
-            var linkCmds = config.getStringList("link.servers." + serverName + ".link-commands");
-            var unlinkCmds = config.getStringList("link.servers." + serverName + ".unlink-commands");
-            servers.put(serverName, new ServerConfig(linkCmds, unlinkCmds));
+            var linkCommands = config.getStringList("servers." + serverName + ".link-commands");
+            var unlinkCommands = config.getStringList("servers." + serverName + ".unlink-commands");
+            servers.put(serverName, new ServerConfig(linkCommands, unlinkCommands));
         }
 
-        // Spigot standalone: flat command lists under link
-        var linkCommands = config.getStringList("link.link-commands");
-        var unlinkCommands = config.getStringList("link.unlink-commands");
+        // Spigot/Folia standalone: flat command lists
+        var linkCommands = config.getStringList("link-commands");
+        var unlinkCommands = config.getStringList("unlink-commands");
 
         return new LinkConfig(cooldownMillis, Collections.unmodifiableMap(servers), linkCommands, unlinkCommands);
     }

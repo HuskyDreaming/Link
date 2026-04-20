@@ -11,9 +11,13 @@ import java.awt.*;
 
 public class SetupCommand extends ListenerAdapter {
 
-    private final DiscordConfig discordConfig;
+    private volatile DiscordConfig discordConfig;
 
     public SetupCommand(DiscordConfig discordConfig) {
+        this.discordConfig = discordConfig;
+    }
+
+    public void updateConfig(DiscordConfig discordConfig) {
         this.discordConfig = discordConfig;
     }
 

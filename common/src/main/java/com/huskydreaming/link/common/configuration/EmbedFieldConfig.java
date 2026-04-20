@@ -9,4 +9,3 @@ package com.huskydreaming.link.common.configuration;
  */
 public record EmbedFieldConfig(String name, String value, boolean inline) {
 }
-
