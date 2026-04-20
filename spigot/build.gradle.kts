@@ -15,15 +15,15 @@ repositories {
 dependencies {
     implementation(project(":common"))
 
-    compileOnly("org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:26.1-R0.1-SNAPSHOT")
     compileOnly("org.slf4j:slf4j-api:2.0.17")
 
 
     // All runtime libs downloaded by DependencyManager — only needed at compile time here
-    compileOnly("net.kyori:adventure-api:4.17.0")
-    compileOnly("net.kyori:adventure-text-minimessage:4.17.0")
-    compileOnly("net.kyori:adventure-text-serializer-plain:4.17.0")
-    compileOnly("net.kyori:adventure-text-serializer-bungeecord:4.3.4")
+    compileOnly("net.kyori:adventure-api:4.26.1")
+    compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
+    compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
+    compileOnly("net.kyori:adventure-text-serializer-bungeecord:4.4.1")
 }
 
 tasks.jar {

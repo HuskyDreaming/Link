@@ -18,23 +18,23 @@ val runtimeJdaTransitives by configurations.creating { isTransitive = false }
 val runtimeAdventure by configurations.creating { isTransitive = false }
 
 // ── Version catalog ──
-val hikariVersion = "5.1.0"
-val caffeineVersion = "3.2.0"
-val sqliteVersion = "3.47.1.0"
-val h2Version = "2.2.224"
-val mariadbVersion = "3.4.1"
-val mysqlVersion = "9.2.0"
-val postgresVersion = "42.7.5"
-val jdaVersion = "6.3.1"
-val adventureVersion = "4.17.0"
-val adventureBungeeVersion = "4.3.4"
+val hikariVersion = "7.0.2"
+val caffeineVersion = "3.2.3"
+val sqliteVersion = "3.53.0.0"
+val h2Version = "2.4.240"
+val mariadbVersion = "3.5.8"
+val mysqlVersion = "9.6.0"
+val postgresVersion = "42.7.10"
+val jdaVersion = "6.4.1"
+val adventureVersion = "4.26.1"
+val adventureBungeeVersion = "4.4.1"
 val examinationVersion = "1.3.0"
 
 dependencies {
     // All external libraries are compileOnly — downloaded at runtime by DependencyManager
     compileOnly("net.kyori:adventure-api:$adventureVersion")
     compileOnly("net.kyori:adventure-text-minimessage:$adventureVersion")
-    compileOnly("org.apache.logging.log4j:log4j-core:2.24.3")
+    compileOnly("org.apache.logging.log4j:log4j-core:2.25.4")
 
     compileOnly("org.xerial:sqlite-jdbc:$sqliteVersion")
     compileOnly("org.mariadb.jdbc:mariadb-java-client:$mariadbVersion")
@@ -61,18 +61,15 @@ dependencies {
     runtimeDrivers("org.postgresql:postgresql:$postgresVersion")
 
     // Driver transitives
-    runtimeDriverTransitives("com.github.waffle:waffle-jna:3.3.0")
-    runtimeDriverTransitives("net.java.dev.jna:jna:5.13.0")
-    runtimeDriverTransitives("net.java.dev.jna:jna-platform:5.13.0")
-    runtimeDriverTransitives("com.google.protobuf:protobuf-java:4.29.0")
+    runtimeDriverTransitives("com.google.protobuf:protobuf-java:4.31.1")
 
     // JDA
     runtimeJda("net.dv8tion:JDA:$jdaVersion")
 
     // JDA transitives
     runtimeJdaTransitives("net.sf.trove4j:core:3.1.0")
-    runtimeJdaTransitives("com.fasterxml.jackson.core:jackson-core:2.21.0")
-    runtimeJdaTransitives("com.fasterxml.jackson.core:jackson-databind:2.21.0")
+    runtimeJdaTransitives("com.fasterxml.jackson.core:jackson-core:2.21.2")
+    runtimeJdaTransitives("com.fasterxml.jackson.core:jackson-databind:2.21.2")
     runtimeJdaTransitives("com.fasterxml.jackson.core:jackson-annotations:2.21")
     runtimeJdaTransitives("com.neovisionaries:nv-websocket-client:2.14")
     runtimeJdaTransitives("com.squareup.okhttp3:okhttp-jvm:5.3.2")

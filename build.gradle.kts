@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "com.huskydreaming"
-version = "1.0.3"
+version = "1.0.4"
 
 subprojects {
     apply(plugin = "java")
@@ -12,7 +12,7 @@ subprojects {
     version = rootProject.version
 
     java {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+        toolchain.languageVersion.set(JavaLanguageVersion.of(25))
     }
 
     repositories {

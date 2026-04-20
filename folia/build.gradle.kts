@@ -15,13 +15,13 @@ repositories {
 dependencies {
     implementation(project(":common"))
 
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.1.1.build.29-alpha")
     compileOnly("org.slf4j:slf4j-api:2.0.17")
 
     // Adventure is provided by Paper/Folia at runtime
-    compileOnly("net.kyori:adventure-api:4.17.0")
-    compileOnly("net.kyori:adventure-text-minimessage:4.17.0")
-    compileOnly("net.kyori:adventure-text-serializer-plain:4.17.0")
+    compileOnly("net.kyori:adventure-api:4.26.1")
+    compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
+    compileOnly("net.kyori:adventure-text-serializer-plain:4.26.1")
 }
 
 tasks.jar {

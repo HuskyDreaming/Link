@@ -3,13 +3,13 @@ package com.huskydreaming.link.common.dependency;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Downloads external library JARs from Maven Central on first startup and
@@ -32,6 +32,7 @@ public class DependencyManager {
 
     /**
      * Downloads (if missing) and loads all given dependencies into the classpath.
+     * Removes any stale JARs from previous versions.
      */
     public void loadAll(Collection<Dependency> dependencies) {
         try {
@@ -39,6 +40,9 @@ public class DependencyManager {
         } catch (IOException e) {
             throw new RuntimeException("Failed to create libraries directory: " + librariesDir, e);
         }
+
+        // Clean up old JARs before loading
+        cleanStaleJars(dependencies);
 
         int downloaded = 0;
         for (var dep : dependencies) {
@@ -56,6 +60,32 @@ public class DependencyManager {
             logger.info("Downloaded {} new library JAR(s) to {}", downloaded, librariesDir);
         }
         logger.info("Loaded {} libraries from cache.", dependencies.size());
+    }
+
+    /**
+     * Removes any JAR files in the libraries directory that are not part of
+     * the current dependency set. This prevents old versions from lingering
+     * on the classpath after an update.
+     */
+    private void cleanStaleJars(Collection<Dependency> dependencies) {
+        var expectedFiles = dependencies.stream()
+                .map(Dependency::fileName)
+                .collect(Collectors.toSet());
+
+        try (var files = Files.list(librariesDir)) {
+            files.filter(p -> p.toString().endsWith(".jar"))
+                    .filter(p -> !expectedFiles.contains(p.getFileName().toString()))
+                    .forEach(p -> {
+                        try {
+                            Files.delete(p);
+                            logger.info("Removed outdated library: {}", p.getFileName());
+                        } catch (IOException e) {
+                            logger.warn("Failed to remove outdated library: {}", p.getFileName());
+                        }
+                    });
+        } catch (IOException e) {
+            logger.warn("Failed to scan libraries directory for cleanup", e);
+        }
     }
 
     private void download(Dependency dep, Path target) {
@@ -93,4 +123,3 @@ public class DependencyManager {
         }
     }
 }
-

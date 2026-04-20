@@ -1,6 +1,6 @@
 name: Link
 version: ${version}
-api-version: "1.21"
+api-version: "26.1"
 main: com.huskydreaming.link.spigot.LinkSpigotPlugin
 description: "Link - links Minecraft accounts with Discord. Supports standalone and velocity-bridge modes."
 authors:
