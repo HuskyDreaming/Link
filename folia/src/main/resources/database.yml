@@ -1,12 +1,13 @@
 # Link - Database Configuration
 
-# Driver to use: sqlite | mysql | mariadb | postgresql
-# SQLite requires no server setup and is the default. Ideal for single-server setups.
+# Driver to use: sqlite | h2 | mysql | mariadb | postgresql
+# SQLite requires no server setup and is the default. H2 is another file-based option.
 # For networks or high-traffic servers, use mysql, mariadb, or postgresql.
-driver: sqlite
+driver: h2
 
-# Path to the SQLite database file (only used when driver is 'sqlite')
-file: "plugins/link/link.db"
+# Path to the SQLite/H2 database file — relative to the plugin's data folder.
+# The subfolder is created automatically. Only used when driver is 'sqlite' or 'h2'.
+file: "h2/link"
 
 # Remote database settings (ignored when driver is 'sqlite')
 host: "localhost"

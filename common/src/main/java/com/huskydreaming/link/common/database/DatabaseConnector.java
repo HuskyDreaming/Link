@@ -16,15 +16,16 @@ public class DatabaseConnector {
     public DatabaseConnector(DatabaseConfig databaseConfig, Logger logger) {
 
         var hikariConfig = new HikariConfig();
-        var driver = databaseConfig.driver() == null ? "sqlite" : databaseConfig.driver().toLowerCase();
+        var driver = databaseConfig.driver() == null ? "h2" : databaseConfig.driver().toLowerCase();
 
         switch (driver) {
             case "sqlite" -> configureSqlite(hikariConfig, databaseConfig, logger);
+            case "h2" -> configureH2(hikariConfig, databaseConfig, logger);
             case "mysql"  -> configureMysql(hikariConfig, databaseConfig, logger);
             case "mariadb" -> configureMariadb(hikariConfig, databaseConfig, logger);
             case "postgresql", "postgres" -> configurePostgresql(hikariConfig, databaseConfig, logger);
             default -> throw new IllegalArgumentException("Unknown database driver: '" + driver +
-                    "'. Supported: sqlite, mysql, mariadb, postgresql");
+                    "'. Supported: sqlite, h2, mysql, mariadb, postgresql");
         }
 
         hikariConfig.setPoolName("LinkPool");
@@ -32,7 +33,6 @@ public class DatabaseConnector {
 
         try (var conn = dataSource.getConnection()) {
             if ("sqlite".equals(driver)) {
-                // Enable WAL mode for better concurrent read performance
                 try (var stmt = conn.createStatement()) {
                     stmt.execute("PRAGMA journal_mode=WAL");
                     stmt.execute("PRAGMA foreign_keys=ON");
@@ -45,29 +45,37 @@ public class DatabaseConnector {
     }
 
     private void configureSqlite(HikariConfig hikari, DatabaseConfig cfg, Logger logger) {
-        loadDriverClass("org.sqlite.JDBC", "SQLite");
+        loadDriver("org.sqlite.JDBC", "SQLite");
 
-        var dbFile = new File(cfg.file());
-        if (dbFile.getParentFile() != null) {
-            dbFile.getParentFile().mkdirs();
-        }
+        var dbFile = cfg.dataDirectory().resolve(cfg.file()).toFile();
+        mkdirs(dbFile);
 
         logger.info("Using SQLite database at: {}", dbFile.getAbsolutePath());
 
         hikari.setJdbcUrl("jdbc:sqlite:" + dbFile.getAbsolutePath());
-        // SQLite is single-writer; pool size must be 1
-        hikari.setMaximumPoolSize(1);
-        hikari.setMinimumIdle(1);
-        hikari.setConnectionTimeout(cfg.connectionTimeout());
-        // Disable keepalive and idle-timeout — not applicable for file-based DBs
-        hikari.setIdleTimeout(0);
-        hikari.setMaxLifetime(0);
-        hikari.setKeepaliveTime(0);
-        hikari.setConnectionTestQuery("SELECT 1");
+        applyFilePoolSettings(hikari, cfg);
+    }
+
+    private void configureH2(HikariConfig hikari, DatabaseConfig cfg, Logger logger) {
+        loadDriver("org.h2.Driver", "H2");
+
+        // Strip .mv.db / .h2.db extension if present so H2 doesn't double-suffix
+        String filePath = cfg.dataDirectory().resolve(cfg.file()).toAbsolutePath().toString();
+        if (filePath.endsWith(".mv.db")) filePath = filePath.substring(0, filePath.length() - 6);
+        if (filePath.endsWith(".h2.db")) filePath = filePath.substring(0, filePath.length() - 6);
+        if (filePath.endsWith(".db"))    filePath = filePath.substring(0, filePath.length() - 3);
+
+        File parent = new File(filePath).getParentFile();
+        if (parent != null) parent.mkdirs();
+
+        logger.info("Using H2 database at: {}", filePath);
+
+        hikari.setJdbcUrl("jdbc:h2:file:" + filePath + ";MODE=MySQL;DATABASE_TO_LOWER=TRUE");
+        applyFilePoolSettings(hikari, cfg);
     }
 
     private void configureMysql(HikariConfig hikari, DatabaseConfig cfg, Logger logger) {
-        loadDriverClass("com.mysql.cj.jdbc.Driver", "MySQL");
+        loadDriver("com.mysql.cj.jdbc.Driver", "MySQL");
         logRemoteConnection("MySQL", cfg, logger);
         validateRemote(cfg);
 
@@ -78,7 +86,7 @@ public class DatabaseConnector {
     }
 
     private void configureMariadb(HikariConfig hikari, DatabaseConfig cfg, Logger logger) {
-        loadDriverClass("org.mariadb.jdbc.Driver", "MariaDB");
+        loadDriver("org.mariadb.jdbc.Driver", "MariaDB");
         logRemoteConnection("MariaDB", cfg, logger);
         validateRemote(cfg);
 
@@ -88,12 +96,23 @@ public class DatabaseConnector {
     }
 
     private void configurePostgresql(HikariConfig hikari, DatabaseConfig cfg, Logger logger) {
-        loadDriverClass("org.postgresql.Driver", "PostgreSQL");
+        loadDriver("org.postgresql.Driver", "PostgreSQL");
         logRemoteConnection("PostgreSQL", cfg, logger);
         validateRemote(cfg);
 
         hikari.setJdbcUrl("jdbc:postgresql://" + cfg.host() + ":" + cfg.port() + "/" + cfg.name());
         applyRemotePoolSettings(hikari, cfg);
+    }
+
+    /** Pool settings for file-based databases (SQLite, H2). */
+    private void applyFilePoolSettings(HikariConfig hikari, DatabaseConfig cfg) {
+        hikari.setMaximumPoolSize(1);
+        hikari.setMinimumIdle(1);
+        hikari.setConnectionTimeout(cfg.connectionTimeout());
+        hikari.setIdleTimeout(0);
+        hikari.setMaxLifetime(0);
+        hikari.setKeepaliveTime(0);
+        hikari.setConnectionTestQuery("SELECT 1");
     }
 
     private void applyRemotePoolSettings(HikariConfig hikari, DatabaseConfig cfg) {
@@ -120,12 +139,21 @@ public class DatabaseConnector {
                 cfg.maximumPoolSize(), cfg.maxLifetime(), cfg.keepaliveTime());
     }
 
-    private static void loadDriverClass(String className, String driverName) {
+    /**
+     * Loads a JDBC driver class by name. Since libraries are no longer relocated
+     * (they're downloaded externally), Class.forName() works with literal class names.
+     */
+    private static void loadDriver(String className, String driverName) {
         try {
             Class.forName(className);
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(driverName + " driver not found in classpath", e);
+            throw new RuntimeException(driverName + " driver not found in classpath. " +
+                    "Check that the libraries/ folder exists and contains the required JAR.", e);
         }
+    }
+
+    private static void mkdirs(File file) {
+        if (file.getParentFile() != null) file.getParentFile().mkdirs();
     }
 
     private static String require(String value, String field) {

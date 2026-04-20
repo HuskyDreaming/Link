@@ -6,6 +6,7 @@ import com.huskydreaming.link.common.configuration.DiscordConfig;
 import com.huskydreaming.link.common.configuration.LinkConfig;
 import com.huskydreaming.link.common.configuration.YamlConfig;
 import com.huskydreaming.link.common.utilities.Messages;
+import com.huskydreaming.link.common.utilities.LogSuppressor;
 import com.huskydreaming.link.folia.LinkFoliaPlugin;
 import com.huskydreaming.link.folia.commands.LinkCommand;
 import com.huskydreaming.link.folia.commands.UnlinkCommand;
@@ -29,7 +30,9 @@ public class StandaloneInitializer {
         var databaseYaml = YamlConfig.loadAndMergeDefaults(plugin.getDataFolder().toPath(), "database.yml");
         var discordYaml = YamlConfig.loadAndMergeDefaults(plugin.getDataFolder().toPath(), "discord.yml");
 
-        var databaseConfig = DatabaseConfig.fromYaml(databaseYaml);
+        LogSuppressor.applyFromConfig(config);
+
+        var databaseConfig = DatabaseConfig.fromYaml(plugin.getDataFolder().toPath(), databaseYaml);
         var discordConfig = DiscordConfig.fromYaml(discordYaml);
         var linkConfig = LinkConfig.fromYaml(config);
 

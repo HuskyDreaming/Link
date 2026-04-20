@@ -32,6 +32,7 @@ public class LinkCommonPlugin {
     private SetupCommand setupCommand;
 
     public void initialize(DatabaseConfig databaseConfig, DiscordConfig discordConfig, LinkConfig linkConfig, Logger logger) {
+
         // Database & repository initialization
         var databaseInitializer = new DatabaseInitializer(databaseConfig, logger);
         databaseConnector = databaseInitializer.initializeDatabaseConnector();
@@ -49,9 +50,11 @@ public class LinkCommonPlugin {
         // Discord initialization
         var discordInitializer = new DiscordInitializer(discordConfig, logger);
         discordClient = discordInitializer.initializeDiscordClient();
-        discordService = discordInitializer.initializeDiscordService(discordClient);
-        setupCommand = new SetupCommand(discordConfig);
-        discordInitializer.registerDiscordListeners(discordClient.getJda(), this, setupCommand);
+        if (discordClient != null) {
+            discordService = discordInitializer.initializeDiscordService(discordClient);
+            setupCommand = new SetupCommand(discordConfig);
+            discordInitializer.registerDiscordListeners(discordClient.getJda(), this, setupCommand);
+        }
     }
 
     public void reloadDiscordConfig(DiscordConfig discordConfig) {

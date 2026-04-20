@@ -18,9 +18,10 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     compileOnly("org.slf4j:slf4j-api:2.0.17")
 
-    implementation("net.kyori:adventure-api:4.17.0")
-    implementation("net.kyori:adventure-text-minimessage:4.17.0")
-    implementation("net.kyori:adventure-text-serializer-plain:4.17.0")
+    // Adventure is provided by Paper/Folia at runtime
+    compileOnly("net.kyori:adventure-api:4.17.0")
+    compileOnly("net.kyori:adventure-text-minimessage:4.17.0")
+    compileOnly("net.kyori:adventure-text-serializer-plain:4.17.0")
 }
 
 tasks.jar {
@@ -37,9 +38,7 @@ tasks.withType<ShadowJar> {
         exclude(dependency("org.slf4j:.*"))
     }
 
-    relocate("com.zaxxer.hikari", "com.huskydreaming.link.libs.hikari")
-    relocate("org.mariadb", "com.huskydreaming.link.libs.mariadb")
-    relocate("com.github.benmanes.caffeine", "com.huskydreaming.link.libs.caffeine")
+    // No relocations — all heavy libs are external (downloaded at runtime)
 }
 
 tasks.build {

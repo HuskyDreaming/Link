@@ -1,12 +1,38 @@
 # Link - Discord Bot Configuration
+
+# Your Discord bot token. Get this from the Discord Developer Portal:
+# https://discord.com/developers/applications → Bot → Reset Token
+# Keep this secret — never share it or commit it to version control.
 token: ""
+
+# The ID of the Discord server (guild) the bot operates in.
+# To get this: enable Developer Mode in Discord settings,
+# then right-click your server name → Copy Server ID.
 guild-id: 0
+
+# The ID of the role to assign when a player links their account.
+# Right-click the role in Server Settings → Roles → Copy Role ID.
+# The bot's role must be positioned ABOVE this role in the role hierarchy.
 role-id: 0
+
+# Customise the embed posted by the /setup command in Discord.
+# Players click the button on this embed to start the linking process.
 embed:
+  # Title displayed at the top of the embed.
   title: "Account Linking"
+
+  # Description text shown in the embed body.
   description: "Link your account to get in-game rewards!"
+
+  # Embed accent color as a hex code.
   color: "#97BA52"
+
+  # Label shown on the authentication button below the embed.
   button-label: "✅ Authenticate Account"
+
+  # Additional fields displayed in the embed.
+  # Each field has a name, value, and whether it should be inline.
+  # Use \n for line breaks within values.
   fields:
     - name: "Linking Guide:"
       value: " - Launch Minecraft\n - Join the server: `play.server.com`\n - Run `/link`\n - Enter your Auth Code in #link"

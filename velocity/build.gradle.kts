@@ -5,16 +5,17 @@ plugins {
     id("com.gradleup.shadow") version "9.4.1"
 }
 
-
 repositories {
     mavenCentral()
-    maven("https://repo.papermc.io/repository/maven-public/") // Velocity
+    maven("https://repo.papermc.io/repository/maven-public/")
 }
 
 dependencies {
     implementation(project(":common"))
 
     compileOnly("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
+
+    // All runtime libs downloaded by DependencyManager — only needed at compile time here
 }
 
 tasks.jar {
@@ -26,15 +27,7 @@ tasks.withType<ShadowJar> {
     archiveClassifier.set("velocity")
     mergeServiceFiles()
 
-    // Relocate shaded libs to avoid classpath conflicts on the proxy
-    relocate("com.zaxxer.hikari", "com.huskydreaming.link.libs.hikari")
-    relocate("org.mariadb", "com.huskydreaming.link.libs.mariadb")
-    relocate("com.github.benmanes.caffeine", "com.huskydreaming.link.libs.caffeine")
-    relocate("net.dv8tion.jda", "com.huskydreaming.link.libs.jda")
-    relocate("net.sf.trove4j", "com.huskydreaming.link.libs.trove4j")
-    relocate("com.neovisionaries.ws", "com.huskydreaming.link.libs.neovisionaries")
-    relocate("okhttp3", "com.huskydreaming.link.libs.okhttp3")
-    relocate("okio", "com.huskydreaming.link.libs.okio")
+    // No relocations — all heavy libs are external (downloaded at runtime)
 }
 
 tasks.build {

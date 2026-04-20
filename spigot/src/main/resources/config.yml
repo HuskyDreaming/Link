@@ -20,3 +20,10 @@ link-commands:
 # Commands dispatched as console when a player unlinks.
 unlink-commands:
   - "say %player% has unlinked their account!"
+
+# Log levels for third-party libraries bundled inside the plugin.
+# Valid values: INFO, WARN, ERROR, OFF
+# WARN (default) hides noisy startup messages while keeping real errors visible.
+logging:
+  hikari: WARN   # HikariCP connection pool
+  jda: WARN      # JDA Discord bot client

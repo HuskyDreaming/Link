@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "com.huskydreaming"
-version = "1.0.1"
+version = "1.0.3"
 
 subprojects {
     apply(plugin = "java")
@@ -30,4 +30,3 @@ subprojects {
         }
     }
 }
-

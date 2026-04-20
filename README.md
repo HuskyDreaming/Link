@@ -28,6 +28,8 @@
 - 🌐 **Two deployment modes** — Velocity proxy or standalone Spigot / Folia
 - 🍃 **Folia support** — region-threaded safe scheduling out of the box
 - 🔄 **Live reload** — `/link reload` reloads all config files without restarting
+- 📦 **Lightweight JARs** — external libraries are downloaded automatically on first start
+- 🗄️ **Multi-database support** — H2, SQLite, MySQL, MariaDB, and PostgreSQL
 
 ---
 
@@ -39,10 +41,27 @@
 | Velocity *(proxy mode)* | 3.5.0+ |
 | Spigot *(standalone mode)* | 1.21.4+ |
 | Folia *(standalone mode)* | 1.21.4+ |
-| SQLite *(default, built-in)* | — |
+| H2 *(default)* | — |
+| SQLite *(optional)* | — |
 | MySQL *(optional)* | 8.0+ |
 | MariaDB *(optional)* | 10.6+ |
 | PostgreSQL *(optional)* | 14+ |
+
+> **Note:** Database drivers are downloaded automatically — you don't need to install anything manually.
+
+---
+
+## 📦 Runtime Libraries
+
+Link keeps its plugin JARs small (~90 KB) by downloading external libraries from Maven Central on first startup. Downloaded JARs are cached in the `plugins/link/libraries/` folder and reused on subsequent starts.
+
+Libraries downloaded include:
+- **HikariCP** — connection pooling
+- **JDA** — Discord bot framework
+- **Database drivers** — H2, SQLite, MySQL, MariaDB, PostgreSQL
+- **JDA transitive dependencies** — Jackson, OkHttp, Kotlin stdlib, etc.
+
+On first start you will see download progress in the console. After that, startup is instant since everything is cached locally.
 
 ---
 
@@ -136,20 +155,21 @@ unlink-commands:
 ### `database.yml`
 
 ```yaml
-# Driver: sqlite | mysql | mariadb | postgresql  (default: sqlite)
-driver: sqlite
+# Driver: sqlite | h2 | mysql | mariadb | postgresql  (default: h2)
+driver: h2
 
-# SQLite file path (only used when driver is 'sqlite')
-file: "plugins/link/link.db"
+# File-based database path — relative to the plugin's data folder.
+# The subfolder is created automatically. Only used when driver is 'sqlite' or 'h2'.
+file: "h2/link"
 
-# Remote connection settings (ignored for SQLite)
+# Remote connection settings (ignored for SQLite and H2)
 host: "localhost"
 port: 3306
 name: "link"
 username: "user"
 password: "password"
 pool:
-  maximum-pool-size: 10    # forced to 1 for SQLite
+  maximum-pool-size: 10    # forced to 1 for SQLite/H2
   minimum-idle: 2
   connection-timeout: 10000
   idle-timeout: 600000
@@ -205,7 +225,7 @@ embed:
 
 ```
 Link/
-├── common/     # Shared logic — database, Discord bot, services, config
+├── common/     # Shared logic — database, Discord bot, services, config, dependency management
 ├── velocity/   # Velocity proxy plugin
 ├── spigot/     # Spigot plugin (1.21.4+)
 └── folia/      # Folia plugin (region-threaded, 1.21.4+)

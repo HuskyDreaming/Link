@@ -35,9 +35,6 @@ public record DiscordConfig(
      * Call this before building the JDA client.
      */
     public void validate(Logger logger) {
-        if (token == null || token.isBlank()) {
-            logger.error("'discord.token' is not set — the bot will not start.");
-        }
         if (guildId == 0L) {
             logger.warn("'discord.guild-id' is 0 — role assignment will not work until this is set.");
         }

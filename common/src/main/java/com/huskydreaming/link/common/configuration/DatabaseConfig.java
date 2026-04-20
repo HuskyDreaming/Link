@@ -1,10 +1,13 @@
 package com.huskydreaming.link.common.configuration;
 
+import java.nio.file.Path;
+
 /**
  * Immutable representation of the {@code database.yml} configuration.
  *
+ * @param dataDirectory     The plugin's data folder — SQLite files are resolved relative to this.
  * @param driver            Database driver: sqlite, mysql, mariadb, or postgresql.
- * @param file              File path for SQLite databases (ignored for other drivers).
+ * @param file              Filename for the SQLite database (resolved inside the plugin data folder).
  * @param host              Database host address.
  * @param port              Database port.
  * @param name              Database (schema) name.
@@ -18,6 +21,7 @@ package com.huskydreaming.link.common.configuration;
  * @param keepaliveTime     Milliseconds between keepalive pings on idle connections.
  */
 public record DatabaseConfig(
+        Path dataDirectory,
         String driver,
         String file,
         String host,
@@ -36,10 +40,11 @@ public record DatabaseConfig(
      * Parses a {@link DatabaseConfig} from the given {@link YamlConfig},
      * reading all values from the {@code database} and {@code database.pool} sections.
      */
-    public static DatabaseConfig fromYaml(YamlConfig config) {
+    public static DatabaseConfig fromYaml(Path dataDirectory, YamlConfig config) {
         return new DatabaseConfig(
-                config.getString("driver", "sqlite"),
-                config.getString("file", "plugins/link/link.db"),
+                dataDirectory,
+                config.getString("driver", "h2"),
+                config.getString("file", "h2/link"),
                 config.getString("host", "localhost"),
                 config.getInt("port", 3306),
                 config.getString("name", "link"),

@@ -5,6 +5,7 @@ import com.huskydreaming.link.common.configuration.DatabaseConfig;
 import com.huskydreaming.link.common.configuration.DiscordConfig;
 import com.huskydreaming.link.common.configuration.LinkConfig;
 import com.huskydreaming.link.common.configuration.YamlConfig;
+import com.huskydreaming.link.common.utilities.LogSuppressor;
 import com.huskydreaming.link.velocity.commands.LinkCommand;
 import com.huskydreaming.link.velocity.commands.UnlinkCommand;
 import com.huskydreaming.link.velocity.listeners.LinkListener;
@@ -41,7 +42,9 @@ public class VelocityInitializer {
         var dbConfig = YamlConfig.loadAndMergeDefaults(dataDirectory, "database.yml");
         var discordYaml = YamlConfig.loadAndMergeDefaults(dataDirectory, "discord.yml");
 
-        var databaseConfiguration = DatabaseConfig.fromYaml(dbConfig);
+        LogSuppressor.applyFromConfig(config);
+
+        var databaseConfiguration = DatabaseConfig.fromYaml(dataDirectory, dbConfig);
         var discordConfiguration = DiscordConfig.fromYaml(discordYaml);
         var linkConfig = LinkConfig.fromYaml(config);
 

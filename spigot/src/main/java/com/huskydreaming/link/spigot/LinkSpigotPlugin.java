@@ -2,10 +2,15 @@ package com.huskydreaming.link.spigot;
 
 import com.huskydreaming.link.common.LinkCommonPlugin;
 import com.huskydreaming.link.common.configuration.YamlConfig;
+import com.huskydreaming.link.common.dependency.DependencyManager;
+import com.huskydreaming.link.common.dependency.DependencyManifest;
+import com.huskydreaming.link.common.dependency.UnsafeClassPathAppender;
 import com.huskydreaming.link.spigot.initialization.StandaloneInitializer;
 import com.huskydreaming.link.spigot.initialization.VelocityBridgeInitializer;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
 
 public class LinkSpigotPlugin extends JavaPlugin {
 
@@ -16,6 +21,9 @@ public class LinkSpigotPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // Download and load external libraries before anything else
+        loadDependencies();
+
         var config = YamlConfig.loadAndMergeDefaults(getDataFolder().toPath(), "config.yml");
         mode = SpigotMode.fromString(config.getString("mode", "velocity-bridge"));
         getLogger().info("Starting in " + mode.name() + " mode.");
@@ -57,5 +65,18 @@ public class LinkSpigotPlugin extends JavaPlugin {
             getLogger().severe("Failed to initialise standalone mode: " + e.getMessage());
             getServer().getPluginManager().disablePlugin(this);
         }
+    }
+
+    private void loadDependencies() {
+        var appender = new UnsafeClassPathAppender(getClassLoader());
+        var logger = LoggerFactory.getLogger("Link");
+        var manager = new DependencyManager(getDataFolder().toPath(), appender, logger);
+        var manifest = DependencyManifest.load();
+
+        var deps = new ArrayList<>(manifest.core());
+        deps.addAll(manifest.allDrivers());
+        deps.addAll(manifest.jda());
+        deps.addAll(manifest.adventure());
+        manager.loadAll(deps);
     }
 }

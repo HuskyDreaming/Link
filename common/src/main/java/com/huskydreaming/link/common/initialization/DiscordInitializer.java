@@ -26,8 +26,13 @@ public class DiscordInitializer {
 
     /**
      * Creates and initializes a DiscordClient (JDA connection).
+     * Returns {@code null} if the token is not configured.
      */
     public DiscordClient initializeDiscordClient() {
+        if (config.token() == null || config.token().isBlank()) {
+            logger.error("Discord bot will not start — please set a valid token in discord.yml and restart.");
+            return null;
+        }
         config.validate(logger);
         return new DiscordClient(config);
     }
